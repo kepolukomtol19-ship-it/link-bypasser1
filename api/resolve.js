@@ -7,7 +7,6 @@ export default async function handler(req, res) {
 
     let log = "";
 
-    // 1. Deteksi domain shortener yang butuh bypass API
     const bypassDomains = [
         "linkvertise.com", "linkvertise.net", "up-to-down.net",
         "work.ink", "loot-labs.com", "lootlabs.gg",
@@ -21,35 +20,31 @@ export default async function handler(req, res) {
         log += `[Shortener] Terdeteksi link key. Mengirim ke API Bypass...\n`;
         
         try {
-            // GANTI URL API DI BAWAH SESUAI PROVIDER YANG LU PAKAI
-            // Contoh pakai bypass.vip (butuh API key kalau pakai versi pro, atau pakai endpoint publik kalau ada)
+            // Panggil API bypass
             const apiUrl = `https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`;
-            
-            const apiRes = await fetch(apiUrl, {
-                headers: { "User-Agent": "Mozilla/5.0" }
-            });
-
+            const apiRes = await fetch(apiUrl, { headers: { "User-Agent": "Mozilla/5.0" } });
             const apiData = await apiRes.json();
 
-            if (apiData.status === "success" || apiData.result) {
+            // Cek apakah hasilnya beneran link (diawali http) atau cuma teks error
+            let resultLink = apiData.result || apiData.destination;
+
+            if (resultLink && (resultLink.startsWith("http://") || resultLink.startsWith("https://"))) {
                 log += `[API] Berhasil dibypass!\n`;
-                return res.status(200).json({ 
-                    finalUrl: apiData.result || apiData.destination, 
-                    log 
-                });
+                return res.status(200).json({ finalUrl: resultLink, log });
             } else {
-                log += `[API Error] ${apiData.message || "Gagal bypass"}\n`;
-                // Fallback ke archive atau lempar error
+                // Kalau API ngirim teks "FREE API SHUT DOWN", kita tangkap di sini
+                log += `[API Gagal] Server API lagi down atau limit.\n`;
+                log += `[Info] Pesan dari API: ${resultLink || "Unknown error"}\n`;
                 return res.status(200).json({ finalUrl: url, log });
             }
 
         } catch (err) {
-            log += `[API Err] ${err.message}\n`;
+            log += `[API Err] Gagal konek ke API: ${err.message}\n`;
             return res.status(200).json({ finalUrl: url, log });
         }
     }
 
-    // 2. JIKA LINK BIASA (Bukan shortener key), pakai metode redirect lama
+    // --- KODE LAMA BUAT LINK BIASA (REDIRECT) ---
     let currentUrl = url;
     const seen = new Set();
     const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0";
