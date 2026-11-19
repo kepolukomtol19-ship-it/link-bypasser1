@@ -1,0 +1,102 @@
+:root {
+    --bg: #0f1115;
+    --panel: #181b21;
+    --border: #2c313c;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.header h1 { font-size: 24px; margin-bottom: 8px; }
+.header p { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+
+.input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+input {
+    flex: 1;
+    padding: 12px 16px;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border 0.2s;
+}
+
+input:focus { border-color: var(--accent); }
+
+button {
+    padding: 12px 20px;
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover { background-color: var(--accent-hover); }
+button:disabled { background-color: var(--border); color: var(--text-dim); cursor: not-allowed; }
+
+#btnOpen { width: 100%; margin-bottom: 20px; background-color: #10b981; }
+#btnOpen:hover:not(:disabled) { background-color: #059669; }
+
+.log-container {
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.log-header {
+    background-color: var(--border);
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+pre {
+    padding: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #a7f3d0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 250px;
+    overflow-y: auto;
+}
