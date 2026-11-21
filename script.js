@@ -1,14 +1,26 @@
+let finalResolvedUrl = "";
+
 async function doBypass() {
     const urlInput = document.getElementById("urlInput").value.trim();
     const logEl = document.getElementById("log");
     const btnBypass = document.getElementById("btnBypass");
+    const btnText = btnBypass.querySelector(".btn-text");
+    const loader = document.getElementById("loader");
     const btnOpen = document.getElementById("btnOpen");
 
-    if (!urlInput) return;
+    if (!urlInput) {
+        logEl.textContent = "Error: Input URL kosong, olivia.";
+        return;
+    }
 
-    logEl.textContent = "Memproses link (bisa 10-30 detik buat link key)...";
+    // Animasi Loading Mulai
     btnBypass.disabled = true;
+    btnText.classList.add("hidden");
+    loader.classList.remove("hidden");
+    btnOpen.classList.remove("show");
     btnOpen.disabled = true;
+    logEl.textContent = "Memproses...\nMencari rute bypass terbaik...";
+    finalResolvedUrl = "";
 
     try {
         const response = await fetch(`/api/resolve?url=${encodeURIComponent(urlInput)}`);
@@ -16,14 +28,24 @@ async function doBypass() {
 
         logEl.textContent = data.log + "\n\n== HASIL AKHIR ==\n" + data.finalUrl;
         finalResolvedUrl = data.finalUrl;
-        
-        if (data.finalUrl && !data.finalUrl.includes("linkvertise") && !data.finalUrl.includes("work.ink")) {
-            btnOpen.disabled = false;
-        }
 
+        // Cek jika link berhasil di-bypass (berbeda dari input asli)
+        if (finalResolvedUrl && finalResolvedUrl !== urlInput && finalResolvedUrl.startsWith("http")) {
+            btnOpen.classList.add("show");
+            btnOpen.disabled = false;
+        } else {
+            logEl.textContent += "\n\n(Gagal: Link tidak berubah atau API limit)";
+        }
     } catch (err) {
-        logEl.textContent = `Error: ${err.message}`;
+        logEl.textContent = `Error Jaringan: ${err.message}`;
     } finally {
+        // Animasi Loading Selesai
         btnBypass.disabled = false;
+        btnText.classList.remove("hidden");
+        loader.classList.add("hidden");
     }
+}
+
+function openInNewTab() {
+    if (finalResolvedUrl) window.open(finalResolvedUrl, "_blank");
 }
