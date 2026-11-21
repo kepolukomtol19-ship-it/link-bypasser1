@@ -19,41 +19,11 @@ export default async function handler(req, res) {
     if (isShortener) {
         log += `[Shortener] Terdeteksi link key. Mencari API yang hidup...\n`;
         
-        // Daftar API Fallback
+        // Daftar API Fallback (Gua masukin 3 sekaligus)
         const apiEndpoints = [
-    `https://bypass.city/api?url=${encodeURIComponent(url)}`,
-    `https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`
-];
-
-for (let i = 0; i < apiEndpoints.length; i++) {
-    try {
-        log += `[Mencoba API ${i+1}]...\n`;
-        const apiRes = await fetch(apiEndpoints[i], { 
-            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" } 
-        });
-        
-        const textData = await apiRes.text();
-        let apiData;
-        
-        // Cek apakah beneran JSON atau HTML error
-        try { 
-            apiData = JSON.parse(textData); 
-        } catch(e) { 
-            log += `[API ${i+1}] Nolak (bukan JSON).\n`;
-            continue; 
-        }
-
-        let resultLink = apiData.result || apiData.destination || apiData.url;
-
-        if (resultLink && resultLink.startsWith("http")) {
-            log += `[API ${i+1}] Berhasil dibypass!\n`;
-            return res.status(200).json({ finalUrl: resultLink, log });
-        }
-    } catch (err) {
-        log += `[API ${i+1}] Timeout. Pindah...\n`;
-    }
-}
-];
+            `https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`,
+            `https://bypass.city/api?url=${encodeURIComponent(url)}`,
+            `https://api.bypass.pics/bypass?url=${encodeURIComponent(url)}`
         ];
 
         for (let i = 0; i < apiEndpoints.length; i++) {
@@ -65,7 +35,14 @@ for (let i = 0; i < apiEndpoints.length; i++) {
                 
                 const textData = await apiRes.text();
                 let apiData;
-                try { apiData = JSON.parse(textData); } catch(e) { continue; } // Skip kalau bukan JSON
+                
+                // Cek apakah API ngembaliin JSON atau malah HTML Error
+                try { 
+                    apiData = JSON.parse(textData); 
+                } catch(e) { 
+                    log += `[API ${i+1}] Nolak (bukan JSON).\n`;
+                    continue; 
+                }
 
                 let resultLink = apiData.result || apiData.destination || apiData.url;
 
@@ -74,7 +51,7 @@ for (let i = 0; i < apiEndpoints.length; i++) {
                     return res.status(200).json({ finalUrl: resultLink, log });
                 }
             } catch (err) {
-                log += `[API ${i+1}] Error/Timeout. Pindah...\n`;
+                log += `[API ${i+1}] Timeout. Pindah...\n`;
             }
         }
         
@@ -82,7 +59,7 @@ for (let i = 0; i < apiEndpoints.length; i++) {
         return res.status(200).json({ finalUrl: url, log });
     }
 
-    // Redirect Native (Buat link biasa)
+    // Handle link biasa (Redirect Native)
     let currentUrl = url;
     const seen = new Set();
     const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0";
