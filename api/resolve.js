@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     if (req.method === "OPTIONS") return res.status(200).end();
 
     const { url } = req.query;
-    if (!url) return res.status(400).json({ error: "Parameter 'url' kosong" });
+    if (!url) return res.status(400).json({ error: "URL kosong" });
 
     let log = "";
 
@@ -17,34 +17,42 @@ export default async function handler(req, res) {
     const isShortener = bypassDomains.some(domain => url.includes(domain));
 
     if (isShortener) {
-        log += `[Shortener] Terdeteksi link key. Mengirim ke API Bypass...\n`;
+        log += `[Shortener] Terdeteksi link key. Mencari API yang hidup...\n`;
         
-        try {
-            // Panggil API bypass
-            const apiUrl = `https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`;
-            const apiRes = await fetch(apiUrl, { headers: { "User-Agent": "Mozilla/5.0" } });
-            const apiData = await apiRes.json();
+        // Daftar API Fallback
+        const apiEndpoints = [
+            `https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`,
+            `https://api.bypass.city/bypass?url=${encodeURIComponent(url)}`,
+            `https://bypass.pics/api?url=${encodeURIComponent(url)}`
+        ];
 
-            // Cek apakah hasilnya beneran link (diawali http) atau cuma teks error
-            let resultLink = apiData.result || apiData.destination;
+        for (let i = 0; i < apiEndpoints.length; i++) {
+            try {
+                log += `[Mencoba API ${i+1}]...\n`;
+                const apiRes = await fetch(apiEndpoints[i], { 
+                    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" } 
+                });
+                
+                const textData = await apiRes.text();
+                let apiData;
+                try { apiData = JSON.parse(textData); } catch(e) { continue; } // Skip kalau bukan JSON
 
-            if (resultLink && (resultLink.startsWith("http://") || resultLink.startsWith("https://"))) {
-                log += `[API] Berhasil dibypass!\n`;
-                return res.status(200).json({ finalUrl: resultLink, log });
-            } else {
-                // Kalau API ngirim teks "FREE API SHUT DOWN", kita tangkap di sini
-                log += `[API Gagal] Server API lagi down atau limit.\n`;
-                log += `[Info] Pesan dari API: ${resultLink || "Unknown error"}\n`;
-                return res.status(200).json({ finalUrl: url, log });
+                let resultLink = apiData.result || apiData.destination || apiData.url;
+
+                if (resultLink && resultLink.startsWith("http")) {
+                    log += `[API ${i+1}] Berhasil dibypass!\n`;
+                    return res.status(200).json({ finalUrl: resultLink, log });
+                }
+            } catch (err) {
+                log += `[API ${i+1}] Error/Timeout. Pindah...\n`;
             }
-
-        } catch (err) {
-            log += `[API Err] Gagal konek ke API: ${err.message}\n`;
-            return res.status(200).json({ finalUrl: url, log });
         }
+        
+        log += `[GAGAL] Semua API sedang down atau limit.\n`;
+        return res.status(200).json({ finalUrl: url, log });
     }
 
-    // --- KODE LAMA BUAT LINK BIASA (REDIRECT) ---
+    // Redirect Native (Buat link biasa)
     let currentUrl = url;
     const seen = new Set();
     const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0";
