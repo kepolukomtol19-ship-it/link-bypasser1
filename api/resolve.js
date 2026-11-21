@@ -21,10 +21,38 @@ export default async function handler(req, res) {
         
         // Daftar API Fallback
         const apiEndpoints = [
-    // API dari TRW (iwoozie.baby) — gratis tanpa key
-    `https://iwoozie.baby/api/free_bypass?url=${encodeURIComponent(url)}`,
-    // API dari bypass.bot.nu — alternatif
-    `https://bypass.bot.nu/bypass?url=${encodeURIComponent(url)}`
+    `https://bypass.city/api?url=${encodeURIComponent(url)}`,
+    `https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`
+];
+
+for (let i = 0; i < apiEndpoints.length; i++) {
+    try {
+        log += `[Mencoba API ${i+1}]...\n`;
+        const apiRes = await fetch(apiEndpoints[i], { 
+            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" } 
+        });
+        
+        const textData = await apiRes.text();
+        let apiData;
+        
+        // Cek apakah beneran JSON atau HTML error
+        try { 
+            apiData = JSON.parse(textData); 
+        } catch(e) { 
+            log += `[API ${i+1}] Nolak (bukan JSON).\n`;
+            continue; 
+        }
+
+        let resultLink = apiData.result || apiData.destination || apiData.url;
+
+        if (resultLink && resultLink.startsWith("http")) {
+            log += `[API ${i+1}] Berhasil dibypass!\n`;
+            return res.status(200).json({ finalUrl: resultLink, log });
+        }
+    } catch (err) {
+        log += `[API ${i+1}] Timeout. Pindah...\n`;
+    }
+}
 ];
         ];
 
