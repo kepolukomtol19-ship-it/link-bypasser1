@@ -3,25 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Bypasser</title>
+    <title>MomoBypas — Link Unlocker</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="bg-animation"></div>
     <div class="container">
         <div class="header">
-            <h1>Link Bypasser</h1>
-            <p>Paste link, tekan Bypass. Lewatin redirect, shortener, dan paywall.</p>
+            <h1>MomoBypas<span>.</span></h1>
+            <p>Bypass shortener, ad-gateway, dan paywall. Kilat.</p>
         </div>
         
         <div class="input-group">
-            <input type="url" id="urlInput" placeholder="https://adf.ly/xxxx atau https://link-susah.com" autocomplete="off">
-            <button id="btnBypass" onclick="doBypass()">Bypass</button>
+            <input type="url" id="urlInput" placeholder="Paste link di sini..." autocomplete="off">
+            <button id="btnBypass" onclick="doBypass()">
+                <span class="btn-text">Bypass</span>
+                <div id="loader" class="loader hidden"></div>
+            </button>
         </div>
-        
-        <button id="btnOpen" onclick="openInNewTab()" disabled>Buka Link Asli</button>
+
+        <button id="btnOpen" onclick="openInNewTab()" class="hidden-btn" disabled>Buka Link Asli</button>
 
         <div class="log-container">
-            <div class="log-header">Log Resolve:</div>
+            <div class="log-header">
+                <span>System Log</span>
+                <div class="dots"><span></span><span></span><span></span></div>
+            </div>
             <pre id="log">Menunggu input...</pre>
         </div>
     </div>
