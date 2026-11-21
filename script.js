@@ -1,13 +1,33 @@
 let finalResolvedUrl = "";
 
 async function doBypass() {
-    const urlInput = document.getElementById("urlInput").value.trim();
-    const logEl = document.getElementById("log");
-    const btnBypass = document.getElementById("btnBypass");
-    const btnText = btnBypass.querySelector(".btn-text");
-    const loader = document.getElementById("loader");
-    const btnOpen = document.getElementById("btnOpen");
+    // Ganti bagian try lu jadi kayak gini:
+    try {
+        const response = await fetch(`/api/resolve?url=${encodeURIComponent(urlInput)}`);
+        
+        // Baca sebagai teks dulu
+        const textData = await response.text();
+        let data;
 
+        // Coba ubah ke JSON
+        try {
+            data = JSON.parse(textData);
+        } catch (e) {
+            throw new Error("API Error: Server menolak request (bukan format JSON).");
+        }
+
+        logEl.textContent = data.log + "\n\n== HASIL AKHIR ==\n" + data.finalUrl;
+        finalResolvedUrl = data.finalUrl;
+
+        if (finalResolvedUrl && finalResolvedUrl !== urlInput && finalResolvedUrl.startsWith("http")) {
+            btnOpen.classList.add("show");
+            btnOpen.disabled = false;
+        } else {
+            logEl.textContent += "\n\n(Gagal: Link tidak berubah atau API limit)";
+        }
+    } catch (err) {
+        logEl.textContent = `Error: ${err.message}`;
+    }
     if (!urlInput) {
         logEl.textContent = "Error: Input URL kosong, olivia.";
         return;
