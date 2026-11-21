@@ -21,9 +21,11 @@ export default async function handler(req, res) {
         
         // Daftar API Fallback
         const apiEndpoints = [
-            `https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`,
-            `https://api.bypass.city/bypass?url=${encodeURIComponent(url)}`,
-            `https://bypass.pics/api?url=${encodeURIComponent(url)}`
+    // API dari TRW (iwoozie.baby) — gratis tanpa key
+    `https://iwoozie.baby/api/free_bypass?url=${encodeURIComponent(url)}`,
+    // API dari bypass.bot.nu — alternatif
+    `https://bypass.bot.nu/bypass?url=${encodeURIComponent(url)}`
+];
         ];
 
         for (let i = 0; i < apiEndpoints.length; i++) {
